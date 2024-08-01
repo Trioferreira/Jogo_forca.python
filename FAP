@@ -1,0 +1,78 @@
+import random
+
+def ler_palavras(arquivo):
+    with open(arquivo, 'r', encoding='utf-8') as f:
+        palavras = {'fácil': [], 'médio': [], 'difícil': []}
+        dificuldade = None
+        for linha in f:
+            linha = linha.strip()
+            if linha == '# fácil':
+                dificuldade = 'fácil'
+            elif linha == '# médio':
+                dificuldade = 'médio'
+            elif linha == '# difícil':
+                dificuldade = 'difícil'
+            elif linha:
+                palavras[dificuldade].append(linha)
+    return palavras
+
+def escolher_palavra(palavras, dificuldade):
+    return random.choice(palavras[dificuldade])
+
+def exibir_palavra(palavra, letras_adivinhadas):
+    return ' '.join([letra if letra in letras_adivinhadas else '_' for letra in palavra])
+
+def jogar_forca():
+    palavras = ler_palavras('palavras.txt')
+    nome_jogador = input("Digite seu nick: ")
+    dificuldade = input("Escolha a dificuldade (fácil, médio, difícil): ").lower()
+
+    while dificuldade not in ['fácil', 'médio', 'difícil']:
+        dificuldade = input("Escolha inválida. Por favor, escolha entre fácil, médio ou difícil: ").lower()
+
+    palavra = escolher_palavra(palavras, dificuldade)
+    letras_adivinhadas = set()
+    tentativas = {'fácil': 10, 'médio': 7, 'difícil': 5}[dificuldade]
+    erros = 0
+    vitorias = 0
+    derrotas = 0
+
+    print(f"\nBem-vindo, {nome_jogador}! Vamos começar o jogo da forca.")
+    print(f"Dificuldade selecionada: {dificuldade.capitalize()}")
+    print(f"Você tem {tentativas} tentativas.")
+
+    while erros < tentativas:
+        print(f"\nPalavra: {exibir_palavra(palavra, letras_adivinhadas)}")
+        print(f"Tentativas restantes: {tentativas - erros}")
+        chute = input("Digite uma letra ou a palavra completa: ").lower()
+
+        if len(chute) == 1:  # Jogador chuta uma letra
+            if chute in letras_adivinhadas:
+                print("Você já adivinhou essa letra. Tente outra.")
+            elif chute in palavra:
+                letras_adivinhadas.add(chute)
+                print("Boa! Você acertou uma letra.")
+            else:
+                erros += 1
+                print("Letra incorreta.")
+        elif chute == palavra:  # Jogador chuta a palavra completa
+            print("Parabéns! Você adivinhou a palavra!")
+            vitorias += 1
+            break
+        else:
+            print("Palavra incorreta. Você perdeu.")
+            derrotas += 1
+            break
+
+        if all(letra in letras_adivinhadas for letra in palavra):
+            print(f"\nParabéns! Você completou a palavra: {palavra}")
+            vitorias += 1
+            break
+    else:
+        print(f"\nVocê perdeu! A palavra era: {palavra}")
+        derrotas += 1
+
+    print(f"\nFim de jogo! {nome_jogador}, você teve {vitorias} vitórias e {derrotas} derrotas.")
+
+if __name__ == "__main__":
+    jogar_forca()
